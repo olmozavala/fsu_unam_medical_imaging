@@ -8,7 +8,10 @@ The code is mostly developed in Matlab.
 The folders are organized in the following way:
 
 [Paths](#paths)
+
 [Image Processing](#image processing)
+
+[External libs](#external libs)
 
 ## Paths
 Includes Matlab files used to set the paths to access the databases
