@@ -1,16 +1,17 @@
 % This function is used to create nice figures showing the results of the registration algorithm
 function showRegistrationResults()
-
     close all;
     clear all;
     clc;
 
-    % Create curve for specific point in the image
-    folderImage  = '/home/olmozavala/Dropbox/TestImages/nifti/RealExample1/';
+    addpath('../../ExternalLibs/niftilib');
+    addpath('../../Paths/');
 
-    addpath('/home/olmozavala/Dropbox/OzOpenCL/Matlab_CreateNifti/External_Tools');
+    foldersImage = strcat(setMIpaths(true),'/Breast/DCE-MRI/2004235_p9_ok');
+
+    addpath(foldersImage);
+
     addpath('ResultsFromTestImage/RegisteredImages/');
-    addpath('../lib/');
     addpath(folderImage);
 
     fontsize = 14;

@@ -7,17 +7,13 @@ clc;
 addpath('../../ExternalLibs/niftilib');
 addpath('../../Paths/');
 
-imagesRootFolder = setMIpaths(true);
-
-addpath(imagesRootFolder);
+folders = setMIpathsBreast(true,'DCE-MRI');
 
 resultsFolder = '../../Outputs';
 outputDirTransMatrix = strcat(resultsFolder,'/TransMatrix/')
 outputDirRegistration= strcat(resultsFolder,'/RegisteredImages/')
 mkdir(outputDirTransMatrix);
 mkdir(outputDirRegistration);
-
-folders={'/Breast/DCE-MRI/2004235_p9_ok'};
 
 totImages = 5; % Total number of images for each DCE-MRI session
 
@@ -32,7 +28,8 @@ optimizer = 'grad';
 
 % Iterate over folders
 for f = 1:length(folders)
-    folder = strcat(imagesRootFolder,folders{f},'/');
+    folder = folders{f};
+    addpath(folder);
 
     display(strcat('Registration for folder: ',folders{f}));
     % Save the first image as the one 'fixed' one to use for the registration
