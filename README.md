@@ -15,7 +15,7 @@ The folders are organized in the following way:
 
 [Image Registration](#registration)
 
-[Image Segmentation](#segmentation)
+[Image Segmentation/Classification](#segmentation)
 
 ## Paths
 Includes Matlab files used to set the paths to access the databases
@@ -33,4 +33,5 @@ GitHub, then they should be added as git modules.
 ## Registration
 Image registration algorithms for different problems like DCE-MRI, fMRI, etc. 
 
-## Segmentation
+## Segmentation 
+Image segmentation algorithms for different problems like DCE-MRI, fMRI, etc. 

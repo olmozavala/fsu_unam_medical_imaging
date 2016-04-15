@@ -4,14 +4,20 @@ close all;
 clear all;
 clc;
 
-%parpool(4);% Run in parallel with 4 workers
-
-imagesRootFolder = '../../../Test_Data/';
-resultsFolder = 'ResultsFromTestImage';
 addpath('../../ExternalLibs/niftilib');
+addpath('../../Paths/');
+
+imagesRootFolder = setMIpaths(true);
+
 addpath(imagesRootFolder);
 
-folders={'DCE-MRI'};
+resultsFolder = '../../Outputs';
+outputDirTransMatrix = strcat(resultsFolder,'/TransMatrix/')
+outputDirRegistration= strcat(resultsFolder,'/RegisteredImages/')
+mkdir(outputDirTransMatrix);
+mkdir(outputDirRegistration);
+
+folders={'/Breast/DCE-MRI/2004235_p9_ok'};
 
 totImages = 5; % Total number of images for each DCE-MRI session
 
@@ -75,10 +81,11 @@ for f = 1:length(folders)
         % ------------ Saving transforamtion matrix ---------
         % This variable stores the final matrix transormations
         display('Saving transformation matrix...');
+
         if(optimizer == 'evol')
-            save(strcat(resultsFolder,'/TransMatrix/TransfMatricesEvol_',num2str(i)), 'tform');
+            save(strcat(outputDirTransMatrix,'TransfMatricesEvol_',num2str(i)), 'tform');
         else
-            save(strcat(resultsFolder,'/TransMatrix/TrasformMatrixGrad_',num2str(i)), 'tform');
+            save(strcat(outputDirTransMatrix,'TransfMatricesGrad',num2str(i)), 'tform');
         end
 
         % -------- Applying transformation ans visualizing
@@ -98,9 +105,9 @@ for f = 1:length(folders)
         display('Saving registered volume..');
         newnii = make_nii(regVolume, [0.972 0.972 1], [ 0 0 0], 16, '');
         if(optimizer == 'evol')
-            save_nii(newnii, strcat(resultsFolder,'/RegisteredImages/Reg_Evol_',num2str(i),'.nii'));
+            save_nii(newnii, strcat(outputDirRegistration,'/Reg_Evol_',num2str(i),'.nii'));
         else
-            save_nii(newnii, strcat(resultsFolder,'/RegisteredImages/Reg_Grad',num2str(i),'.nii'));
+            save_nii(newnii, strcat(outputDirRegistration,'/Reg_Grad',num2str(i),'.nii'));
         end
     end
 end
