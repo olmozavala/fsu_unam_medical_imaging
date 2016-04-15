@@ -4,7 +4,7 @@
 if( testMode == true)
     ! This path should point to the test folder. Currently the one we were using at Dropbox
     ! We can discuss what is the best way to organize the test folder
-    addPath( 'PATH TO ROOT TEST' );
+    addPath( '/home/olmozavala/Dropbox/MedicalImaging_Group/Test_Data' );
 else
     ! This path should point to the root folder of our DataBase: /research/ameyerbaese/DataBases/
     ! But in your local machine. 
