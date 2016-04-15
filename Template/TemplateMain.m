@@ -11,14 +11,14 @@ testFolder = false; % Indicates if we are using the test folder or not
 dbname = 'DCE-MRI'; % Which DB are we using [DCE-MRI, NME, ...]
 poolsize = 4; % Size of the parallel pool
 
-folders = setMIpathsBreast(testFolder,'DCE-MRI'); % Retrieving folders from production DB
+folders = setMyPathBreast(testFolder,'DCE-MRI'); % Retrieving folders from production DB
 
 % Instantiate the parallel process
 if(length(gcp('nocreate')) == 0)
     poolobj = parpool(poolsize);
 end
 
-% Iterate over folders
+% Iterate over foldersg
 parfor f = 1:length(folders)
     folder = folders{f};
     addpath(folder);

@@ -7,7 +7,7 @@ clc;
 addpath('../../ExternalLibs/niftilib');
 addpath('../../Paths/');
 
-folders = setMIpathsBreast(true,'DCE-MRI');
+folders = setMyPathBreast(true,'DCE-MRI');
 
 resultsFolder = '../../Outputs';
 outputDirTransMatrix = strcat(resultsFolder,'/TransMatrix/')
