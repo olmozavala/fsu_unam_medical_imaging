@@ -9,16 +9,16 @@ The folders are organized in the following way:
 
 [Paths](#paths)
 
-[Image Processing](#image processing)
+[Image Processing](#Image_Processing)
 
-[External libs](#external libs)
+[External libs](#External_Libs)
 
 ## Paths
 Includes Matlab files used to set the paths to access the databases
 being used by our group in their local machines. This folder should only
 contain examples of the paths and not hardcoded paths to a specific machine. 
 
-# Image Processsing
+# Image_Processsing
 This folder contains examples of image processing algorithms that may be usefull
 in many different scenarios. The code in this folder is general enough to easily use in multiple problems.  
 
