@@ -9,18 +9,28 @@ The folders are organized in the following way:
 
 [Paths](#paths)
 
-[Image Processing](#Image_Processing)
+[Image Processing](#image processing)
 
-[External libs](#External_Libs)
+[External libs](#external libs)
+
+[Image Registration](#registration)
+
+[Image Segmentation](#segmentation)
 
 ## Paths
 Includes Matlab files used to set the paths to access the databases
 being used by our group in their local machines. This folder should only
 contain examples of the paths and not hardcoded paths to a specific machine. 
 
-# Image_Processsing
+## Image Processsing
 This folder contains examples of image processing algorithms that may be usefull
 in many different scenarios. The code in this folder is general enough to easily use in multiple problems.  
 
-# External Libs
-Common libraries that are used in many projects. If the external libraries are shared 
+## External Libs
+Common libraries that are used in several projects. If the external libraries are already available in
+GitHub, then they should be added as git modules. 
+
+## Registration
+Image registration algorithms for different problems like DCE-MRI, fMRI, etc. 
+
+## Segmentation
