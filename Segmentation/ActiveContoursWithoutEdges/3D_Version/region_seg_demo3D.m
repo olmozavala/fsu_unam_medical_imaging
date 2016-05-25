@@ -4,75 +4,53 @@ close all;
 % clear all;
 clc;
 
-addpath('/home/olmozavala/Dropbox/OzOpenCL/MatlabActiveContours/Load_NIfTI_Images/External_Tools/');
-addpath('/home/olmozavala/Dropbox/OzOpenCL/MatlabActiveContours/images/3D/RealExample1/');
-addpath('/home/olmozavala/Dropbox/TestImages/nifti/Basics');
-addpath('./3drend/');
+addpath('../../../ExternalLibs/niftilib');
+addpath('../../../ExternalLibs/3drend');
+addpath('../../../Paths/'); % Add the paths folder
 
-test = 1;
-
-% matlabpool close force 'local'
-% matlabpool 4
-
-resolutions = [32:32:128];
-%resolutions = [160];
-%fileNamesPrefix = {'Gradient', 'Box'};
-fileNamesPrefix = {'Gradient'};
 numberIterations = 100;
 displayGraph = true;
 alphaVal = .2;
-numRuns = 10; % How many runs of the same file are we doing (to obtain better times)
 
-AllTimes = zeros(2,length(resolutions), 2); % Last two dims are accumulated time and mean time
+testFolder = true; % Indicates if we are using the test folder or not
+dbname = 'DCE-MRI'; % Which DB are we using [DCE-MRI, NME, ...]
 
-for file = 1:2
-    time = 0;
-    indexRes = 1;
-    for res = resolutions
-        timeSDFacc = 0;
-        for iter = 1:numRuns
-            fileName = strcat(fileNamesPrefix{file}, num2str(res), '.nii');
-            I = load_nii(fileName); %-- load the image
+folders = setMyPathBreast(testFolder,'DCE-MRI'); % Retrieving folders from production DB
 
-            imgData = I.img;
-            % view_nii(I);
+for f = 1:length(folders)
+    folder = folders{f};
+    addpath(folder);
 
-            dims = size(imgData);
+    display(strcat('Apply algorithm for folder: ',folders{f}));
 
-            m = zeros(dims(1),dims(2),dims(3)); %-- create initial mask        
+    %fileName = strcat(folder, '2_enhancedRT_normRed.nii');
+    fileName = 'Gradient64.nii';
+    I = load_nii(fileName); %-- load the image
 
-            nonzero = (find(imgData > 0)); % Select all the values that were not 0
+    imgData = I.img;
+    view_nii(I);
 
-            % Make those none zero values a little bit visible        
+    dims = size(imgData);
 
-            % Creating initial mask
-            maxWidth = floor(dims(1)/4);
-            maxHeight = floor(dims(2)/4);
-            maxDepth= floor(dims(3)/4);
+    m = zeros(dims(1),dims(2),dims(3)); %-- create initial mask        
 
-            btmx = floor(dims(1)/2) - maxWidth;
-            topx = floor(dims(1)/2) + maxWidth;
+    nonzero = (find(imgData > 0)); % Select all the values that were not 0
 
-            btmy = floor(dims(2)/2) - maxHeight;
-            topy = floor(dims(2)/2) + maxHeight;
+    % Creating initial mask at the middle of the image
+    maxWidth = floor(dims(1)/4);
+    maxHeight = floor(dims(2)/4);
+    maxDepth= floor(dims(3)/4);
 
-            btmz = floor(2*dims(3)/3) - maxDepth;
-            topz = floor(2*dims(3)/3) + maxDepth;
+    btmx = floor(dims(1)/2) - maxWidth;
+    topx = floor(dims(1)/2) + maxWidth;
 
-            m(btmx:topx,btmy:topy,btmz:topz) = 1; % Initial mask        
+    btmy = floor(dims(2)/2) - maxHeight;
+    topy = floor(dims(2)/2) + maxHeight;
 
-            tic();
-            [seg timeSDF] = region_seg3D(imgData, m, numberIterations, alphaVal, displayGraph); %-- Run segmentation
-            time = time + toc();
-            timeSDFacc = timeSDFacc + timeSDF;
-            iter
-        end
-        display('TimeSDF: ');
-        timeSDFacc
-        fprintf('File %s Iterations %i accTime: %f \t meanTime %f \r', fileName, numberIterations, time, time/numRuns);
-        AllTimes(file,indexRes, :) = [time time/numRuns];        
-        indexRes = indexRes+1;
-    end
+    btmz = floor(2*dims(3)/3) - maxDepth;
+    topz = floor(2*dims(3)/3) + maxDepth;
+
+    m(btmx:topx,btmy:topy,btmz:topz) = 1; % Initial mask        
+
+    [seg timeSDF] = region_seg3D(imgData, m, numberIterations, alphaVal, displayGraph); %-- Run segmentation
 end
-
-save('Times3D','AllTimes')
