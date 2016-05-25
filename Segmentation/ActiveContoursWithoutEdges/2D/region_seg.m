@@ -39,14 +39,15 @@ function [seg times]= region_seg(I,init_mask,max_its,alpha,display)
     I = im2graydouble(I);    
 
     %-- Create a signed distance map (SDF) from mask
-    sdf = tic();
+    tic;
     phi = mask2phi(init_mask);
-    times(1) = toc();
+    times(1) = toc;
 
+    dispEvery = 10; % Number of steps to run before plotting the results
     totTime = 0;
     %--main loop
 
-    tic();
+    tic;
     for its = 0:1:max_its   % Note: no automatic convergence test
 
         idx = find(phi <= 1.2 & phi >= -1.2);  %get the curve's narrow band
@@ -71,7 +72,7 @@ function [seg times]= region_seg(I,init_mask,max_its,alpha,display)
         %-- Keep SDF smooth
         phi = sussman(phi, .5);
         %-- final output
-        if(display && (mod(its,10) == 0))
+        if(display && (mod(its,dispEvery) == 0))
             showCurveAndPhi(I,phi,its);
         end
     end
@@ -83,7 +84,7 @@ function [seg times]= region_seg(I,init_mask,max_its,alpha,display)
 
     %-- make mask from SDF
     seg = phi<=0; %-- Get mask from levelset
-    times(2) = toc();
+    times(2) = toc;
 
     %---------------------------------------------------------------------
     %---------------------------------------------------------------------

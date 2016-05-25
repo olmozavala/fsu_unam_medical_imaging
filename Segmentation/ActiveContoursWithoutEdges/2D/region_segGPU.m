@@ -36,6 +36,8 @@ function [seg times] = region_segGPU(Iloc,init_mask_loc,max_its,alpha,display)
   end
   %-- ensures image is 2D double matrix
   Iloc = im2graydouble(Iloc);    
+
+  dispEvery = 10; % Number of steps to run before plotting the results
   
   %-- Create a signed distance map (SDF) from mask    
   sdf = tic();
@@ -45,14 +47,10 @@ function [seg times] = region_segGPU(Iloc,init_mask_loc,max_its,alpha,display)
   I = gpuArray(Iloc);
   phi = gpuArray(philoc);
   
-  its_step = 1000;
-  accTime = zeros( max_its/its_step, 2);
   totTime = 0;
-  indx = 1;
   %--main loop
   tic();
-  for its = 0:its_step:max_its   % Note: no automatic convergence test
-      for int_it = 1:its_step% Note: no automatic convergence test
+  for its = 0:1:max_its   % Note: no automatic convergence test
 
         idx = find(phi <= 1.2 & phi >= -1.2);  %get the curve's narrow band
         
@@ -77,15 +75,13 @@ function [seg times] = region_segGPU(Iloc,init_mask_loc,max_its,alpha,display)
         phi = sussman(phi, .5);
 
         %-- intermediate output
-        if( display)
+        if(display && (mod(its,10) == 0))
           showCurveAndPhi(Iloc,gather(phi),its);
         end
-    end
-    indx = indx + 1;
   end
   
   %-- final output
-  if(display)
+  if(display && (mod(its,dispEvery) == 0))
     showCurveAndPhi(Iloc,gather(phi),its);
   end
   
