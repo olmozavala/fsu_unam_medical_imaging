@@ -5,25 +5,25 @@ function makeAnimationsAndEnhanceImage()
 close all;
 clear all;
 clc;
-applyClassifier(1);%This correspond to the NaiveBayes classifier
-close all;
-clear all;
-clc;
+%applyClassifier(1);%This correspond to the NaiveBayes classifier
+%close all;
+%clear all;
+%clc;
 applyClassifier(2);%This correspond to the Regression Tree classifier
 
 function applyClassifier(classifier)
 
 
+    testFolder = false;
     % Loads nifti library
-    addpath('/home/olmozavala/Dropbox/OzOpenCL/MatlabActiveContours/Load_NIfTI_Images/External_Tools');
-    imagesFolder ='/media/USBSimpleDrive/BigData_Images_and_Others/PhD_Thesis/DCE_MRI/';
+    addpath('../../../ExternalLibs/niftilib');
+    imagesFolder = getMyPath(testFolder,'DCE-MRI');
     % These are the training 
-    folders={ '8256301_p1_ok', '7585734_p14_ok_huge_tumor', '6107252_p2_ok', '5641445_p1_ok_non-mass_from_mass', '0847664_p6_ok'};
-    %folders={ '3107404_p7_ok', '4030560_p10_ok', '2004235_p9_ok'};
-    framesPerSecond = 6;
+    folders ={ '0847664_p6_ok', '1018659_p15_ok', '5641445_p1_ok_non-mass_from_mass', '6107252_p2_ok', '8256301_p1_ok' };
+    framesPerSecond = 8;
 
     % This is used to create and display the animations of the classifications
-    makeAnimations = false;
+    makeAnimations = true;
     % This is used to use the classification to enhance the original nifti
     makeEnhancement = true;
     % Avoid saving the new enhanced nifti file
@@ -52,8 +52,8 @@ function applyClassifier(classifier)
             % --- Modify the data ----
             % -- If it is classified as a lesion it is multiplied by 1.5, else it is multiplied by 0.5
             fprintf('Modifying data...\n');
-            lessionIndex = find(classified == 3);
-            nonLessionIndex = find(classified ~= 3);
+            lessionIndex = find(classified == 1);
+            nonLessionIndex = find(classified ~= 1);
             %length(lessionIndex)
             %length(nonLessionIndex)
             oldData = imgData;
@@ -105,26 +105,17 @@ function applyClassifier(classifier)
             hold on
 
             %Colors for each of the classes, 0 is white
-            
-            %color = [
-            %        [0 0 0];
-            %        [1 1 0];
-            %        [0 1 0];
-            %        [1 0 0]; ];
-
             color = [
-                    [0 0 .2];
-                    [.3 .3 0];
-                    [0 .2 0];
-                    [.5 0 0]; ];
+                    [0 0 0];
+                    [1 0 0]; ];
 
 
             classified = classified + 1;
             for frame=1:size(classified,3)
                 temp = squeeze(classified(:,end:-1:1,frame));
-                % We need to ensure that all the slides have at least one pixel 0,1,2,3 or the images will
+                % We need to ensure that all the slides have at least one pixel 0,1 or the images will
                 % have different intensities, we assign specifc values to the first four pixels of the whole image
-                temp(1) = 1; temp(2) = 2; temp(3) = 3; temp(4) = 4;
+                temp(1) = 1; temp(2) = 2; 
                 %test =  mat2gray(temp);
                 test =  label2rgb(temp,color);
                 imshow(test);

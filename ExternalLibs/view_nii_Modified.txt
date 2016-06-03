@@ -1,0 +1,4 @@
+The view_nii file has been modified (OZ). In function set_image_value (line 2907) 
+we added code that stores the position clicked by the user in a file LastPositions.txt
+
+This is used to obtain positions to train a classifier.

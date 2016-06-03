@@ -4,32 +4,34 @@ close all;
 clear all;
 clc;
 
-addpath('/home/olmozavala/Dropbox/OzOpenCL/MatlabActiveContours/Load_NIfTI_Images/External_Tools');
-addpath('/home/olmozavala/Dropbox/OzOpenCL/Matlab_ImagePreProcessing_Kinetic/Kinetics/Kinetic_Curves_by_classes/');
-%folders={ '8256301_p1_ok', '7585734_p14_ok_huge_tumor', '6107252_p2_ok', '5641445_p1_ok_non-mass_from_mass', '0847664_p6_ok'};
-folders={ '3107404_p7_ok', '4030560_p10_ok', '2004235_p9_ok'};
+addpath('../../../ExternalLibs/niftilib');
+addpath('./Kinetic_Curves_by_classes/');
+addpath('../../../Paths/'); % Add the paths folder
+
+
+testFolder = false;
+filesFolder = './Data_Positions/';
+saveFolder = './Kinetic_Curves_by_classes/';
+imagesPath = getMyPath(testFolder,'DCE-MRI');
+folders = setMyPathBreast(testFolder,'DCE-MRI'); % Retrieving folders from production DB
+
+addpath(imagesPath);
 
 % ----------- Reads the curves for each class ----------
 fprintf('Reading the curves...\n'); 
 load('lesions.mat')
-load('background.mat')
-load('stissue.mat')
-load('chest.mat')
+load('nolesions.mat')
 
 fprintf('Plotting the mean curves...\n'); 
 hold on
-plot(mean(lesions),'r','LineWidth',3);
-plot(mean(background),'k','LineWidth',3);
-plot(mean(stissue),'g','LineWidth',3);
-plot(mean(chest),'b','LineWidth',3);
-legend( 'Lesion','Background','Soft Tissue','Chest') ;
+plot(mean(lesion),'r','LineWidth',3);
+plot(mean(nolesion),'k','LineWidth',3);
+legend( 'Lesion','No Lessoin') ;
 pause(.2);
-%figure
-%hold on
-%plot(lesions','--r','LineWidth',1);
-%plot(background','--k','LineWidth',1);
-%plot(stissue','--g','LineWidth',1);
-%plot(chest','--b','LineWidth',1);
+figure
+hold on
+plot(lesion','--r','LineWidth',1);
+plot(nolesion','--k','LineWidth',1);
 
 % ========= Put everything in a big matrix =======
 % The attributes are:
@@ -40,37 +42,27 @@ pause(.2);
 % time of max slope [12]
 % non-decreasing function [13]
 
-% 5 files x 30 lesions x 20 background x 30 soft tissue x 30 chest
+% 5 files x 25 lesions x 25 no lesions
 fprintf('Putting everything ina big matrix...');
-totSize = 550;
+totFiles = 5;
+totExamples = 25;
+totSize = totFiles*totExamples*2;
 attributes = 13;
 curveMatrix = zeros(totSize,attributes);
 outputVector = zeros(totSize,1);
-classes = {'Background 0','Chest 1','Soft Tissue 2','Lesion 3'};
+classes = {'No lession 0','Lesion 1'};
 currIdx = 1;
 
 % ------ Fill lesions ------
-currSize = 150;
-curveMatrix(1:currIdx+currSize-1,1:5) = lesions;
-outputVector(1:currIdx+currSize-1) = 3;
+currSize = totExamples*totFiles;
+curveMatrix(1:currIdx+currSize-1,1:5) = lesion;
+outputVector(1:currIdx+currSize-1) = 1;
 
-% ------ Fill background ------
+% ------ Fill no lesions ------
 currIdx = currIdx+currSize;
-currSize = 100;
-curveMatrix(currIdx:currIdx+currSize-1,1:5) = background;
+currSize = totExamples*totFiles;
+curveMatrix(currIdx:currIdx+currSize-1,1:5) = nolesion;
 outputVector(currIdx:currIdx+currSize-1) = 0;
-
-% ------ Fill stissue------
-currIdx = currIdx+currSize;
-currSize = 150;
-curveMatrix(currIdx:currIdx+currSize-1,1:5) = stissue;
-outputVector(currIdx:currIdx+currSize-1) = 2; 
-
-% ------ Fill chest------
-currIdx = currIdx+currSize;
-currSize = 150;
-curveMatrix(currIdx:currIdx+currSize-1,1:5) = chest; 
-outputVector(currIdx:currIdx+currSize-1) = 1; 
 
 %------------------ Compute slopes -------------
 curveMatrix(:,6) = curveMatrix(:,2) - curveMatrix(:,1);
@@ -91,10 +83,10 @@ curveMatrix(:,10) = mean( curveMatrix(:,1:5),2 );
 curveMatrix(:,13) = min( (curveMatrix(:,6:9) > -5)')';
 
 % ======================== Construct NB classifier ==========================================
-fprintf('Making the classifiers...\n');
-NBClassifier = fitcnb(curveMatrix, outputVector)
-isGenRate = resubLoss(NBClassifier);
-fprintf('Naive Bayes classification error of %4.2f % \n',isGenRate*100);
+%fprintf('Making the classifiers...\n');
+%NBClassifier = fitcnb(curveMatrix, outputVector)
+%isGenRate = resubLoss(NBClassifier);
+%fprintf('Naive Bayes classification error of %4.2f % \n',isGenRate*100);
 
 TreesClassifier = fitctree(curveMatrix, outputVector)
 isGenRate = resubLoss(TreesClassifier);
@@ -102,31 +94,30 @@ fprintf('Regression Trees classification error of %4.2f % \n',isGenRate*100);
 
 % ======================== Classify images ==========================================
 fprintf('Classifiying the images...\n');
-imagesFolder ='/media/USBSimpleDrive/BigData_Images_and_Others/PhD_Thesis/DCE_MRI/'
-addpath(imagesFolder);
 
+% Iterate over foldersg
 for i = 1:length(folders)
+    folder = strcat(imagesPath,folders{i});
     % Read all 5 niftis
     fprintf('\nReading nifti files for: %s ... \n',folders{i});
-    niftis = readNifti(folders{i});
+    niftis = readNifti(folder);
 
     % -------------- Apply the Regression tree classifier into the image ------------- 
     classified = makeMagic(niftis, TreesClassifier);
     % --------------- Saving classification of the matrix features ------------
-    save(strcat(imagesFolder,folders{i},'/ClassifiedPixels.mat'),'classified')
+    save(strcat(folder,'/ClassifiedPixels.mat'),'classified')
     
-
-    % -------------- Apply the NB classifier into the image ------------- 
-    classified = makeMagic(niftis, NBClassifier);
-    % --------------- Saving classification of the matrix features ------------
-    save(strcat(imagesFolder,folders{i},'/ClassifiedPixelsNB.mat'),'classified')
+%
+%    % -------------- Apply the NB classifier into the image ------------- 
+%    classified = makeMagic(niftis, NBClassifier);
+%    % --------------- Saving classification of the matrix features ------------
+%    save(strcat(imagesPath,folder,'/ClassifiedPixelsNB.mat'),'classified')
 end
 
 % This function is used to read 5 nifti files for each folder
 function niftis = readNifti(folder)
-    path = '/media/USBSimpleDrive/BigData_Images_and_Others/PhD_Thesis/DCE_MRI/';
     for i=1:5
-        fileName = strcat(path,folder,'/',num2str(i),'.nii');
+        fileName = strcat(folder,'/',num2str(i),'.nii');
         nii = load_nii(fileName);
         % We smooth the image with gaussian blur
         niftis(i,:,:,:) = smooth3(nii.img);

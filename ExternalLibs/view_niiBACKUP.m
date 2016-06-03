@@ -2911,7 +2911,7 @@ function set_image_value(nii_view),
     cor = round(nii_view.slices.cor);
     axi = round(nii_view.slices.axi);
     
-    fid = fopen('LastPositions.txt', 'a+');
+    fid = fopen('../../Classification/NaiveBayes/Kinetics/Data_Positions/LastPositions.txt', 'a+');
     fprintf(fid, '%d %d %d\n', sag, cor, axi);
     display([sag cor axi]);
 

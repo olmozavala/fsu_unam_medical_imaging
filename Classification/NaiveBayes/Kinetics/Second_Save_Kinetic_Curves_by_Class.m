@@ -9,127 +9,107 @@ clc;
 % The new positions get updated at 'set_image_value' line 2914
 % The mouse click to update the position is 'catched' at line 583
 
-addpath('/home/olmozavala/Dropbox/OzOpenCL/MatlabActiveContours/Load_NIfTI_Images/External_Tools');
-addpath('/media/USBSimpleDrive/BigData_Images_and_Others/PhD_Thesis/DCE_MRI/');
-filesFolder = '/home/olmozavala/Dropbox/OzOpenCL/Matlab_ImagePreProcessing_Kinetic/Kinetics/Data_Positions/';
+addpath('../../../ExternalLibs/niftilib');
+addpath('../../../Paths/'); % Add the paths folder
+filesFolder = './Data_Positions/';
 
-files={'8256301_F.txt', '7585734_F.txt','6107252.txt','5641445_F.txt','0847664_F.txt'};
-folders={ '8256301_p1_ok', '7585734_p14_ok_huge_tumor', '6107252_p2_ok', '5641445_p1_ok_non-mass_from_mass', '0847664_p6_ok'};
-saveFolder = '/home/olmozavala/Dropbox/OzOpenCL/Matlab_ImagePreProcessing_Kinetic/Kinetics/Kinetic_Curves_by_classes/';
+folders ={ '0847664_p6_ok', '1018659_p15_ok', '5641445_p1_ok_non-mass_from_mass', '6107252_p2_ok', '8256301_p1_ok' };
+saveFolder = './Kinetic_Curves_by_classes/';
 
-totFiles = length(files);
+testFolder = false;
+dbname = 'DCE-MRI';
+
+mypath = getMyPath(testFolder,'DCE-MRI'); % Retrieving folders from production DB
+
+totFiles = length(folders);
 
 padding = 900;
 width = 800;
 height = 400;
 
-% 5 files x 30 lesions x 20 background x 30 soft tissue x 30 chest
-lesions = zeros(5*30,5);
-background= zeros(5*20,5);
-stissue= zeros(5*30,5);
-chest = zeros(5*30,5);
+examples = 25;
+tot_seq = 5; % Number of temporal sequences
 
-%for i=1:totFiles
+% 5 files x 30 
+lesion = zeros(totFiles*examples,tot_seq);
+nolesion = zeros(totFiles*examples,tot_seq);
+
 for i=1:totFiles
     % Read file
-    fname = strcat(filesFolder,files{i});
-    fprintf('\n Reading positions file: %S \n',fname);
-    fileId = fopen(fname);
+    fname_lesion = strcat(filesFolder,'Lesion/',folders{i},'.txt');
+    fname_no_lesion = strcat(filesFolder,'noLesion/',folders{i},'.txt');
+
+    display(strcat('Reading positions file: ',fname_lesion));
+    file_id_lesion = fopen(fname_lesion);
+    file_id_no_lesion = fopen(fname_no_lesion);
 
     % Read nifti
-    display(strcat('Reading nifti files from: ',folders{i}))
-    niftis = readNifti(folders{i});
+    display(strcat('Reading nifti files from: ',strcat(mypath,folders{i})))
+    niftis = readNifti(strcat(mypath,folders{i}));
 
     % --------------- Read lesions -------------- 
     display('Reading lesions positions...');
-    pos = readPositions(fileId,1,30);
+    pos = readPositions(file_id_lesion,0,examples);
     % Display kinetic curves
     %figure('Position',[100 100 width height])
-    lesions(30*(i-1)+1:30*i,:) = obtainKineticCurves(niftis,folders{i},pos,30);
+    lesion(examples*(i-1)+1:examples*i,:) = obtainKineticCurves(niftis,pos,examples,tot_seq);
     %title('Lesion');
 
-    %-------------------- Read background -------------------- 
-    display('Reading background positions...');
-    pos = readPositions(fileId,0,20);
+    %-------------------- Read no lesions -------------------- 
+    display('Reading NO lesion positions...');
+    pos = readPositions(file_id_no_lesion,0,examples);
     % Display kinetic curves
     %figure('Position',[padding 100 width height])
-    background(20*(i-1)+1:20*i,:) = obtainKineticCurves(niftis,folders{i},pos,20);
-    %title('Background');
+    nolesion(examples*(i-1)+1:examples*i,:) = obtainKineticCurves(niftis,pos,examples,tot_seq);
+    %title('No Lesion');
 
-    %-------------------- Read Soft tissue -------------------- 
-    display('Reading soft tissue positions...');
-    pos = readPositions(fileId,0,30);
-    % Display kinetic curves
-    %figure('Position',[padding padding width height])
-    stissue(30*(i-1)+1:30*i,:) = obtainKineticCurves(niftis,folders{i},pos,30);
-    %title('Soft tissue');
-
-    %-------------------- Read Chest -------------------- 
-    display('Reading chest positions...');
-    pos = readPositions(fileId,0,30);
-    % Display kinetic curves
-    %figure('Position',[100 padding width height])
-    chest(30*(i-1)+1:30*i,:) = obtainKineticCurves(niftis,folders{i},pos,30);
-    %title('Chest');
-
-    %pause(.5)
-    fclose(fileId);
+    pause(.5)
+    fclose(file_id_lesion);
+    fclose(file_id_no_lesion);
 end
 
 fprintf('Displaying the average curves..\n');
 hold on
-plot(mean(lesions),'r','LineWidth',3);
-plot(mean(background),'k','LineWidth',3);
-plot(mean(stissue),'g','LineWidth',3);
-plot(mean(chest),'b','LineWidth',3);
-legend( 'Lesion','Background','Soft Tissue','Chest') ;
+plot(mean(lesion),'r','LineWidth',3);
+plot(mean(nolesion),'k','LineWidth',3);
+legend( 'Lesion','nolesion') ;
 figure
 fprintf('Displaying all the curves..\n');
 hold on
-plot(lesions','--r','LineWidth',1);
-plot(background','--k','LineWidth',1);
-plot(stissue','--g','LineWidth',1);
-plot(chest','--b','LineWidth',1);
+plot(lesion','--r','LineWidth',1);
+plot(nolesion','--k','LineWidth',1);
 
 %========== Saving the curves ============
 fprintf('Displaying all the curves..\n');
-%save(strcat(saveFolder,'lesions'),'lesions')
-%save(strcat(saveFolder,'background'),'background')
-%save(strcat(saveFolder,'chest'),'chest')
-%save(strcat(saveFolder,'stissue'),'stissue')
+save(strcat(saveFolder,'lesions'),'lesion')
+save(strcat(saveFolder,'nolesions'),'nolesion')
 
 % Reads the nifti files from the folder being specified
 function niftis = readNifti(folder)
-    path = '/media/USBSimpleDrive/BigData_Images_and_Others/PhD_Thesis/DCE_MRI/';
     for i=1:5
-        fileName = strcat(path,folder,'/',num2str(i),'.nii');
+        fileName = strcat(folder,'/',num2str(i),'.nii');
         nii = load_nii(fileName);
         niftis(i,:,:,:) = nii.img;
     end
 
 % Reads the positions and indicates how many lines should it read
-function pos = readPositions(fileId,jump,readTot)
-    %Read folder
-    h = fscanf(fileId,'%s\n',jump);
-    %Read lesion header
-    h = fscanf(fileId,'%s %s %s\n',3);
-    display(strcat('First line been read on the file: ', h));
+function pos = readPositions(file_id_lesion,jump,readTot)
     % Initialize position vector
     pos = zeros(readTot,3);
     for i = 1:readTot
-        pos(i,:) = fscanf(fileId,'%d %d %d\n',3);
+        pos(i,:) = fscanf(file_id_lesion,'%d %d %d\n',3);
     end
 
 % This function is usede to read the kinetic curves of the desired position,
 % it makes a gaussian of the 2x2 neighbors and computes the average of that curve
-function curve = obtainKineticCurves(niftis,folder, pos, tot)
+function curve = obtainKineticCurves(niftis, pos, tot,tot_seq)
 
     curve = zeros(tot,5);
     nnsize = 2;
     visualize = false;
 
     % Iterate over the images
-    for i=1:5
+    for i=1:tot_seq
         % Loading the image
         imgData = squeeze(niftis(i,:,:,:));
         % Iterate over the positions
@@ -147,7 +127,3 @@ function curve = obtainKineticCurves(niftis,folder, pos, tot)
             curve(p,i) = mean(mean(mean(sm)));
         end
     end
-
-    %plot(curve','-*');
-    %hold on
-    %plot(mean(curve),'--r','LineWidth',3);
