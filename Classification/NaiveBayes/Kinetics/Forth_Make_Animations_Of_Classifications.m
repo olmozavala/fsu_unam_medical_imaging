@@ -18,8 +18,7 @@ function applyClassifier(classifier)
     % Loads nifti library
     addpath('../../../ExternalLibs/niftilib');
     imagesFolder = getMyPath(testFolder,'DCE-MRI');
-    % These are the training 
-    folders ={ '0847664_p6_ok', '1018659_p15_ok', '5641445_p1_ok_non-mass_from_mass', '6107252_p2_ok', '8256301_p1_ok' };
+    folders = setMyPathBreast(testFolder,'DCE-MRI'); % Retrieving folders from production DB
     framesPerSecond = 8;
 
     % This is used to create and display the animations of the classifications
@@ -37,15 +36,15 @@ function applyClassifier(classifier)
         % ---------- Loads the classificaiton of this specific case ---------
         display('Reading classified files ...');
         if(classifier == 1)
-            load(strcat(imagesFolder,folders{i},'/ClassifiedPixelsNB'));
+            load(strcat(folders{i},'/ClassifiedPixelsNB'));
         else
-            load(strcat(imagesFolder,folders{i},'/ClassifiedPixels'));
+            load(strcat(folders{i},'/ClassifiedPixels'));
         end
 
         if(makeEnhancement )
             % ---- Loads the second nifti file of the current folder ---
             fprintf('Loading nifti file....\n');
-            secondNifti = strcat(imagesFolder,folders{i},'/2.nii');
+            secondNifti = strcat(folders{i},'/2.nii');
             nii = load_nii(secondNifti);
             imgData= nii.img;
 
@@ -66,9 +65,9 @@ function applyClassifier(classifier)
                 fprintf('Creating new nifti file....\n');
                 newnii = make_nii(imgData, [0.972 0.972 1], [ 0 0 0], 16, '');
                 if(classifier == 1)% NB classifier
-                    save_nii(newnii, strcat(imagesFolder,folders{i},'/2_enhancedNB.nii'));
+                    save_nii(newnii, strcat(folders{i},'/2_enhancedNB.nii'));
                 else
-                    save_nii(newnii, strcat(imagesFolder,folders{i},'/2_enhanced.nii'));
+                    save_nii(newnii, strcat(folders{i},'/2_enhanced.nii'));
                 end
             end
 
@@ -95,9 +94,9 @@ function applyClassifier(classifier)
             pause(.1);
             fig = figure('Position',[200 200 400 400]);
             if(classifier == 1)% NB classifier
-                fileName = strcat('Animations/classified_nb_',folders{i}),'.avi';
+                fileName = strcat('Animations/classified_nb_',getLastFolder(folders{i}),'.avi');
             else
-                fileName = strcat('Animations/classified_',folders{i}),'.avi';
+                fileName = strcat('Animations/classified_',getLastFolder(folders{i}),'.avi');
             end
             aviobj = VideoWriter(fileName);
             aviobj.FrameRate = framesPerSecond;

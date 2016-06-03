@@ -45,8 +45,9 @@ plot(nolesion','--k','LineWidth',1);
 % 5 files x 25 lesions x 25 no lesions
 fprintf('Putting everything ina big matrix...');
 totFiles = 5;
-totExamples = 25;
-totSize = totFiles*totExamples*2;
+totExamplesL = 25;
+totExamplesNL = 95;
+totSize = totFiles*(totExamplesL+totExamplesNL);
 attributes = 13;
 curveMatrix = zeros(totSize,attributes);
 outputVector = zeros(totSize,1);
@@ -54,13 +55,13 @@ classes = {'No lession 0','Lesion 1'};
 currIdx = 1;
 
 % ------ Fill lesions ------
-currSize = totExamples*totFiles;
+currSize = totExamplesL*totFiles;
 curveMatrix(1:currIdx+currSize-1,1:5) = lesion;
 outputVector(1:currIdx+currSize-1) = 1;
 
 % ------ Fill no lesions ------
 currIdx = currIdx+currSize;
-currSize = totExamples*totFiles;
+currSize = totExamplesNL*totFiles;
 curveMatrix(currIdx:currIdx+currSize-1,1:5) = nolesion;
 outputVector(currIdx:currIdx+currSize-1) = 0;
 
@@ -97,7 +98,7 @@ fprintf('Classifiying the images...\n');
 
 % Iterate over foldersg
 for i = 1:length(folders)
-    folder = strcat(imagesPath,folders{i});
+    folder = folders{i};
     % Read all 5 niftis
     fprintf('\nReading nifti files for: %s ... \n',folders{i});
     niftis = readNifti(folder);

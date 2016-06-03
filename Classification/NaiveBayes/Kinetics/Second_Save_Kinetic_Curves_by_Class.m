@@ -27,12 +27,13 @@ padding = 900;
 width = 800;
 height = 400;
 
-examples = 25;
+examplesL = 25;
+examplesNL = 95;
 tot_seq = 5; % Number of temporal sequences
 
 % 5 files x 30 
-lesion = zeros(totFiles*examples,tot_seq);
-nolesion = zeros(totFiles*examples,tot_seq);
+lesion = zeros(totFiles*examplesL,tot_seq);
+nolesion = zeros(totFiles*examplesNL,tot_seq);
 
 for i=1:totFiles
     % Read file
@@ -49,18 +50,18 @@ for i=1:totFiles
 
     % --------------- Read lesions -------------- 
     display('Reading lesions positions...');
-    pos = readPositions(file_id_lesion,0,examples);
+    pos = readPositions(file_id_lesion,0,examplesL);
     % Display kinetic curves
     %figure('Position',[100 100 width height])
-    lesion(examples*(i-1)+1:examples*i,:) = obtainKineticCurves(niftis,pos,examples,tot_seq);
+    lesion(examplesL*(i-1)+1:examplesL*i,:) = obtainKineticCurves(niftis,pos,examplesL,tot_seq);
     %title('Lesion');
 
     %-------------------- Read no lesions -------------------- 
     display('Reading NO lesion positions...');
-    pos = readPositions(file_id_no_lesion,0,examples);
+    pos = readPositions(file_id_no_lesion,0,examplesNL);
     % Display kinetic curves
     %figure('Position',[padding 100 width height])
-    nolesion(examples*(i-1)+1:examples*i,:) = obtainKineticCurves(niftis,pos,examples,tot_seq);
+    nolesion(examplesNL*(i-1)+1:examplesNL*i,:) = obtainKineticCurves(niftis,pos,examplesNL,tot_seq);
     %title('No Lesion');
 
     pause(.5)
