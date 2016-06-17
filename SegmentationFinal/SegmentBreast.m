@@ -28,7 +28,7 @@ end
 %disp('Get the Edge map of the image')
 %tic
 try
-   EMfile=load('EdgeMap.Mat');
+   EMfile=load('EdgeMap.mat');
    EdgeMaps = EMfile.EM;
 catch exception
    EdgeMaps = GetEm3D(imgData);
@@ -42,7 +42,7 @@ end
 % end
 %%% Load the Erorded EdgeMap-------------------------------
 try
-   EMfile=load('ErodedEdgeMap.Mat');
+   EMfile=load('ErodedEdgeMap.mat');
    EdgeMapsEroded = EMfile.EdgeMapEroded;
 catch exception
    EdgeMapsEroded = getEMeroded3D(EdgeMaps);
@@ -78,7 +78,7 @@ EdgeMap=EdgeMaps(:,:,imageIdx);
 %%% Get the body Fat Mask for middle slice -------------------------------------
 
 try
-   bodyfatmaskfile=load('mSliceBodyFat.Mat');
+   bodyfatmaskfile=load('mSliceBodyFat.mat');
    bodyfatmask = bodyfatmaskfile.bodyfatmask;
 catch exception
     bodyfatmask = fcm_image(img);

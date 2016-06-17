@@ -1,11 +1,13 @@
 function [ EM ] = EdgeMap(im)
     % Identify ridge-like regions and normalise image
-    blksze = 16; thresh = 0.1;
+    blksze = 16; thresh = 0.05;
     [normim, mask] = ridgesegment(im, blksze, thresh);
     %show(normim,1);
     
     % Determine ridge orientations
     [orientim, reliability] = ridgeorient(normim, 1, 5, 5);
+    
+    %orientim=repmat(pi/size(im,1):pi/size(im,1):pi,[size(im,2) 1])';
     %plotridgeorient(orientim, 20, im, 2)
     %show(reliability,6)
     
@@ -19,12 +21,13 @@ function [ EM ] = EdgeMap(im)
     freq = medfreq.*mask;
     
     % Now apply filters to enhance the ridge pattern
-    newim = ridgefilter(normim, orientim, freq, 0.5, 0.5, 1);
+    newim = ridgefilter(normim, orientim, freq, 0.35, 0.75, 1);
     %show(newim,4);
     
     % Binarise, ridge/valley threshold is 0
-    EM = newim > 0;
+    %EM = newim > 200;
     %show(EM,5);
+    EM=newim;
 
 
 end
