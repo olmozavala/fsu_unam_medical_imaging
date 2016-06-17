@@ -1,166 +1,135 @@
 % This function reads the curves for each class, obtain a list of features from them, creates a classifier 
 function makeClassifier()
-close all;
-clear all;
-clc;
+    close all;
+    clear all;
+    clc;
 
-addpath('../../../ExternalLibs/niftilib');
-addpath('./Kinetic_Curves_by_classes/');
-addpath('../../../Paths/'); % Add the paths folder
+    addpath('../../../ExternalLibs/niftilib');
+    addpath('./Kinetic_Curves_by_classes/');
+    addpath('../../../Paths/'); % Add the paths folder
 
 
-testFolder = false;
-filesFolder = './Data_Positions/';
-saveFolder = './Kinetic_Curves_by_classes/';
-imagesPath = getMyPath(testFolder,'DCE-MRI');
-folders = setMyPathBreast(testFolder,'DCE-MRI'); % Retrieving folders from production DB
+    testFolder = false;
+    filesFolder = './Data_Positions/';
+    saveFolder = './Kinetic_Curves_by_classes/';
+    imagesPath = getMyPath(testFolder,'DCE-MRI');
+    folders = setMyPathBreast(testFolder,'DCE-MRI'); % Retrieving folders from production DB
 
-addpath(imagesPath);
+    addpath(imagesPath);
 
-% ----------- Reads the curves for each class ----------
-fprintf('Reading the curves...\n'); 
-load('lesions.mat')
-load('nolesions.mat')
+    % ----------- Reads the curves for each class ----------
+    fprintf('Reading the curves...\n'); 
+    load('lesions.mat')
+    load('nolesions.mat')
 
-fprintf('Plotting the mean curves...\n'); 
-hold on
-plot(mean(lesion),'r','LineWidth',3);
-plot(mean(nolesion),'k','LineWidth',3);
-legend( 'Lesion','No Lessoin') ;
-pause(.2);
-figure
-hold on
-plot(lesion','--r','LineWidth',1);
-plot(nolesion','--k','LineWidth',1);
+    fprintf('Plotting the mean curves...\n'); 
+    hold on
+    plot(mean(lesion),'r','LineWidth',3);
+    plot(mean(nolesion),'k','LineWidth',3);
+    legend( 'Lesion','No Lessoin') ;
+    pause(.2);
+    figure
+    hold on
+    plot(lesion','--r','LineWidth',1);
+    plot(nolesion','--k','LineWidth',1);
 
-% ========= Put everything in a big matrix =======
-% The attributes are:
-% intensities  [1:5] 
-% slopes       [6:9]
-% mean value   [10] 
-% time to peak [11]
-% time of max slope [12]
-% non-decreasing function [13]
+    % ========= Put everything in a big matrix =======
+    % The attributes are:
+    % intensities  [1:5] 
+    % slopes       [6:9]
+    % mean value   [10] 
+    % time to peak [11]
+    % time of max slope [12]
+    % non-decreasing function [13]
+    % Max intensity value [14]
 
-% 5 files x 25 lesions x 25 no lesions
-fprintf('Putting everything ina big matrix...');
-totFiles = 5;
-totExamplesL = 25;
-totExamplesNL = 95;
-totSize = totFiles*(totExamplesL+totExamplesNL);
-attributes = 13;
-curveMatrix = zeros(totSize,attributes);
-outputVector = zeros(totSize,1);
-classes = {'No lession 0','Lesion 1'};
-currIdx = 1;
+    % 5 files x 25 lesions x 25 no lesions
+    fprintf('Putting everything ina big matrix...');
+    totFiles = 5;
+    totExamplesL = 25;
+    totExamplesNL = 95;
+    totSize = totFiles*(totExamplesL+totExamplesNL);
+    attributes = 14;
+    curveMatrix = zeros(totSize,attributes);
+    outputVector = zeros(totSize,1);
+    classes = {'No lession 0','Lesion 1'};
+    currIdx = 1;
 
-% ------ Fill lesions ------
-currSize = totExamplesL*totFiles;
-curveMatrix(1:currIdx+currSize-1,1:5) = lesion;
-outputVector(1:currIdx+currSize-1) = 1;
+    % ------ Fill lesions ------
+    currSize = totExamplesL*totFiles;
+    curveMatrix(1:currIdx+currSize-1,:) = ComputeAttributes(lesion);
+    outputVector(1:currIdx+currSize-1) = 1;
 
-% ------ Fill no lesions ------
-currIdx = currIdx+currSize;
-currSize = totExamplesNL*totFiles;
-curveMatrix(currIdx:currIdx+currSize-1,1:5) = nolesion;
-outputVector(currIdx:currIdx+currSize-1) = 0;
+    % ------ Fill no lesions ------
+    currIdx = currIdx+currSize;
+    currSize = totExamplesNL*totFiles;
+    curveMatrix(currIdx:currIdx+currSize-1,:) = ComputeAttributes(nolesion);
+    outputVector(currIdx:currIdx+currSize-1) = 0;
 
-%------------------ Compute slopes -------------
-curveMatrix(:,6) = curveMatrix(:,2) - curveMatrix(:,1);
-curveMatrix(:,7) = curveMatrix(:,3) - curveMatrix(:,2);
-curveMatrix(:,8) = curveMatrix(:,4) - curveMatrix(:,3);
-curveMatrix(:,9) = curveMatrix(:,5) - curveMatrix(:,4);
+    % ======================== Construct NB classifier ==========================================
+    %fprintf('Making the classifiers...\n');
+    %NBClassifier = fitcnb(curveMatrix, outputVector)
+    %isGenRate = resubLoss(NBClassifier);
+    %fprintf('Naive Bayes classification error of %4.2f % \n',isGenRate*100);
 
-%------------------ Compute mean -------------
-curveMatrix(:,10) = mean( curveMatrix(:,1:5),2 );
+    TreesClassifier = fitctree(curveMatrix, outputVector)
+    isGenRate = resubLoss(TreesClassifier);
+    fprintf('Regression Trees classification error of %4.2f % \n',isGenRate*100);
 
-%------------------ Compute time to peak -------------
-[del curveMatrix(:,11)] = max( curveMatrix(:,1:5)');
+    % ======================== Classify images ==========================================
+    fprintf('Classifiying the images...\n');
 
-%------------------ Compute time of max slope -------------
-[del curveMatrix(:,12)] = max( curveMatrix(:,6:9)');
+    % Folders with chest segmentation
+    filesdirOutput = strcat(imagesPath,'DCE-MRI-Segmented-from-Mat/DCE-MRI_mat-Segmented/');
 
-%------------------ No 'sharp' decrease -------------
-curveMatrix(:,13) = min( (curveMatrix(:,6:9) > -5)')';
+    % Iterate over foldersg
+    for i = 1:length(folders)
+        folder = folders{i};
 
-% ======================== Construct NB classifier ==========================================
-%fprintf('Making the classifiers...\n');
-%NBClassifier = fitcnb(curveMatrix, outputVector)
-%isGenRate = resubLoss(NBClassifier);
-%fprintf('Naive Bayes classification error of %4.2f % \n',isGenRate*100);
+        % Read all 5 niftis
+        fprintf('\nReading nifti files for: %s ... \n',folders{i});
+        normalized = true;
+        smoothed = true;
+        niftis = readNifti(folder,normalized,smoothed);
 
-TreesClassifier = fitctree(curveMatrix, outputVector)
-isGenRate = resubLoss(TreesClassifier);
-fprintf('Regression Trees classification error of %4.2f % \n',isGenRate*100);
+        % -------------- Apply the Regression tree classifier into the image ------------- 
+        temp = makeMagic(niftis, TreesClassifier);
 
-% ======================== Classify images ==========================================
-fprintf('Classifiying the images...\n');
+        % ----------- Removing chest segmentation -------
+        fname = strcat(filesdirOutput, 'idx_2_',getLastFolder(folders{i}),'.mat');
+        load(fname);  
+        classified = zeros(size(temp));
+        classified(PPrimaL(2):PPrimaR(2),PPrimaR(1):size(niftis,2),:) = ...
+                    temp(PPrimaL(2):PPrimaR(2),PPrimaR(1):size(niftis,2),:).*mask;
 
-% Iterate over foldersg
-for i = 1:length(folders)
-    folder = folders{i};
-    % Read all 5 niftis
-    fprintf('\nReading nifti files for: %s ... \n',folders{i});
-    niftis = readNifti(folder);
-
-    % -------------- Apply the Regression tree classifier into the image ------------- 
-    classified = makeMagic(niftis, TreesClassifier);
-    % --------------- Saving classification of the matrix features ------------
-    save(strcat(folder,'/ClassifiedPixels.mat'),'classified')
-    
-%
-%    % -------------- Apply the NB classifier into the image ------------- 
-%    classified = makeMagic(niftis, NBClassifier);
-%    % --------------- Saving classification of the matrix features ------------
-%    save(strcat(imagesPath,folder,'/ClassifiedPixelsNB.mat'),'classified')
+        % --------------- Saving classification of the matrix features ------------
+        save(strcat(folder,'/ClassifiedPixels.mat'),'classified')
+        %
+        %    % -------------- Apply the NB classifier into the image ------------- 
+        %    classified = makeMagic(niftis, NBClassifier);
+        %    % --------------- Saving classification of the matrix features ------------
+        %    save(strcat(imagesPath,folder,'/ClassifiedPixelsNB.mat'),'classified')
+    end
 end
 
-% This function is used to read 5 nifti files for each folder
-function niftis = readNifti(folder)
-    for i=1:5
-        fileName = strcat(folder,'/',num2str(i),'.nii');
-        nii = load_nii(fileName);
-        % We smooth the image with gaussian blur
-        niftis(i,:,:,:) = smooth3(nii.img);
-    end
 
-% This function classifies a DCE-MRI image using one classifier
+    % This function classifies a DCE-MRI image using one classifier
 function result = makeMagic(niftis, nb)
     % Iterate over the images
     dims = size(niftis);
-    totPixelsPerVolume = dims(2)*dims(3)*dims(4);
-    totNumberOfFiles = dims(1);
-    numAttribs = 13;
-    curveMatrix = zeros(totPixelsPerVolume,numAttribs);
+    totCurves = dims(2)*dims(3)*dims(4);
+    curves = zeros(totCurves, dims(1));
+
+    for i = 1:dims(1);
+        curves(:,i) = squeeze(niftis(i,:));
+    end
 
     % Fill the curves with the intensity values
     display('Filling matrix with kinetic values....')
-    for i=1:totNumberOfFiles
-        curveMatrix(:,i) = squeeze(niftis(i,:));
-    end
-
-    display('Computing slopes of kinetic info....')
-    %------------------ Compute slopes -------------
-    curveMatrix(:,6) = curveMatrix(:,2) - curveMatrix(:,1);
-    curveMatrix(:,7) = curveMatrix(:,3) - curveMatrix(:,2);
-    curveMatrix(:,8) = curveMatrix(:,4) - curveMatrix(:,3);
-    curveMatrix(:,9) = curveMatrix(:,5) - curveMatrix(:,4);
-
-    %------------------ Compute mean -------------
-    display('Computing mean of kinetic info....')
-    curveMatrix(:,10) = mean( curveMatrix(:,1:5),2 );
-
-    %------------------ Compute time to peak -------------
-    display('Computing time to peak....')
-    [del curveMatrix(:,11)] = max( curveMatrix(:,1:5)');
-
-    %------------------ Compute time of max slope -------------
-    [del curveMatrix(:,12)] = max( curveMatrix(:,6:9)');
-
-    %------------------ No 'sharp' decrease -------------
-    curveMatrix(:,13) = min( (curveMatrix(:,6:9) > -5)')';
+    curveMatrix = ComputeAttributes(curves);
 
     % --------- Evaluate the classifier ---------
     display('Classifying the features matrix....')
     result = predict(nb,curveMatrix);
     result = reshape(result,[dims(2),dims(3),dims(4)]);
+end

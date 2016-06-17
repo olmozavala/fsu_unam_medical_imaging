@@ -1,8 +1,12 @@
-% Info about view_nii.m
+% This function saves the postions clicked by the user inside the the view_nii interface.
+% The positions are saved in a file called 'LastPositions' where this code is being executed. 
+% The positions are appended in the file, so the user needs to verify which positions he/she needs
+% to save
+
+
+% ======== Info about changes that were made into view_nii.m =======
 % The new positions get updated at 'set_image_value' line 2914
 % The mouse click to update the position is 'catched' at line 583
-% The positions are saved at /home/olmozavala/Dropbox/OzOpenCL/Matlab_ImagePreProcessing_Kinetic/
-% in a file called  TEMP.txt
 close all;
 clear all;
 clc;

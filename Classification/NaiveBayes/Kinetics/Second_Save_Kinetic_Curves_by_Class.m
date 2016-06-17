@@ -44,9 +44,11 @@ for i=1:totFiles
     file_id_lesion = fopen(fname_lesion);
     file_id_no_lesion = fopen(fname_no_lesion);
 
-    % Read nifti
+    % Read nifti normalized
     display(strcat('Reading nifti files from: ',strcat(mypath,folders{i})))
-    niftis = readNifti(strcat(mypath,folders{i}));
+    normalized = true;
+    smoothed = true;
+    niftis = readNifti(strcat(mypath,folders{i}),normalized,smoothed);
 
     % --------------- Read lesions -------------- 
     display('Reading lesions positions...');
@@ -85,14 +87,6 @@ fprintf('Displaying all the curves..\n');
 save(strcat(saveFolder,'lesions'),'lesion')
 save(strcat(saveFolder,'nolesions'),'nolesion')
 
-% Reads the nifti files from the folder being specified
-function niftis = readNifti(folder)
-    for i=1:5
-        fileName = strcat(folder,'/',num2str(i),'.nii');
-        nii = load_nii(fileName);
-        niftis(i,:,:,:) = nii.img;
-    end
-
 % Reads the positions and indicates how many lines should it read
 function pos = readPositions(file_id_lesion,jump,readTot)
     % Initialize position vector
@@ -124,7 +118,7 @@ function curve = obtainKineticCurves(niftis, pos, tot,tot_seq)
                 imshow(sample(:,end:-1:1,z)',[0 1500]);
             end
             % Smoothing with a gaussian
-            sm = smooth3(imgData(x-nnsize:x+nnsize,y-nnsize:y+nnsize,z-nnsize:z+nnsize), 'gaussian');
-            curve(p,i) = mean(mean(mean(sm)));
+            boxVal = imgData(x-nnsize:x+nnsize,y-nnsize:y+nnsize,z-nnsize:z+nnsize);
+            curve(p,i) = mean(mean(mean(boxVal)));
         end
     end

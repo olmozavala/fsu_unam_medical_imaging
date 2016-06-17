@@ -2,8 +2,8 @@ clc
 clear 
 close all
 %% Definitions
-filesdir = '/Users/Shared/Breast/DCE-MRI_mat/';
-filesdirOutput = '/Users/Shared/Breast/DCE-MRI_mat-Segmented/';
+filesdir = '/media/USBSimpleDrive/BigData_Images_and_Others/MedicalImaging/Breast/DCE-MRI/';
+filesdirOutput = '/media/USBSimpleDrive/BigData_Images_and_Others/MedicalImaging/Breast/DCE-MRI-Segmented-from-Mat/DCE-MRI_mat-Segmented/';
 
 %% Process all folder
 % files = dir(strcat(filesdir,'*.mat'));
