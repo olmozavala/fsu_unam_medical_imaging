@@ -41,7 +41,7 @@
 
 function newim = ridgefilter3D(im, orient1, orient2, freq, kx, ky,kz, showfilter)
 
-if nargin == 5
+if nargin == 7
     showfilter = 0;
 end
 
@@ -52,8 +52,10 @@ im = double(im);
 [rows, cols, slcs] = size(im);
 newim = zeros(rows,cols,slcs);
 
-[validr,validc, valids] = find(freq > 0);  % find where there is valid frequency data.
-ind = sub2ind([rows,cols,slcs], validr, validc,valids);
+% [validr,validc, valids] = find(freq);  % find where there is valid frequency data.
+% ind = sub2ind([rows,cols,slcs], validr, validc,valids);
+ind = find(freq(:));
+[validr,validc, valids]=ind2sub(size(freq),ind);
 
 % Round the array of frequencies to the nearest 0.01 to reduce the
 % number of distinct frequencies we have to deal with.
@@ -115,9 +117,10 @@ end
 % Find indices of matrix points greater than maxsze from the image
 % boundary
 maxsze = sze(1);
-finalind = find(validr>maxsze & validr<rows-maxsze & ...
-    validc>maxsze & validc<cols-maxsze & ...
-    valids>maxsze & valids<slcs-maxsze);
+ finalind = find(validr>maxsze & validr<rows-maxsze & ...
+     validc>maxsze & validc<cols-maxsze & ...
+     valids>maxsze & valids<slcs-maxsze);
+%finalind = ind(;
 
 % Convert orientation matrix values from radians to an index value
 % that corresponds to round(degrees/angleInc)
@@ -136,6 +139,7 @@ for k = 1:length(finalind)
     r = validr(finalind(k));
     c = validc(finalind(k));
     s = valids(finalind(k));
+%    [r,c,s]=ind2sub(size(im),finalind(k));
     
     % find filter corresponding to freq(r,c)
     filterindex = freqindex(round(freq(r,c,s)*100));
