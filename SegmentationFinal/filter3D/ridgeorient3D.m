@@ -29,8 +29,8 @@ function [angle1, angle2] = ...
     Gy = imfilter(im, fy);
     Gz = imfilter(im, fz);
 
-    angle1 = getAngleField(Gx, Gy, blocksigma, orientsmoothsigma);
-    angle2 = getAngleField(hypot(Gx,Gy), Gz, blocksigma, orientsmoothsigma);
+    angle1 = getAngleField(Gz, Gy, blocksigma, orientsmoothsigma);
+    angle2 = getAngleField(hypot(Gz,Gy), Gx, blocksigma, orientsmoothsigma);
 
 
 function [orientim] = ...
@@ -62,9 +62,9 @@ function [orientim] = ...
 
         f = images.internal.createGaussianKernel([orientsmoothsigma orientsmoothsigma orientsmoothsigma], [sze sze sze]);
         cos2theta=imfilter(cos2theta, f);
-        sin2theta=imfilter(cos2theta, f);           
+        sin2theta=imfilter(sin2theta, f);           
     end
+   
     
-    orientim = pi/2 + atan2(sin2theta,cos2theta)/2;
-         
+    orientim = pi/2 + atan2(sin2theta,cos2theta)/2;      
 
