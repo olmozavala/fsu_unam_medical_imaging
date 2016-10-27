@@ -14,6 +14,7 @@ function [ EM ] = EdgeMap3D(im,mask)
     % Determine ridge orientations
     [orientim1, orientim2] = ridgeorient3D(normim, 1, 5, 5);
     
+    fprintf('Orientation maps extracted!\n')
     %orientim=repmat(pi/size(im,1):pi/size(im,1):pi,[size(im,2) 1])';
     %plotridgeorient(orientim, 20, im, 2)
     %show(reliability,6)

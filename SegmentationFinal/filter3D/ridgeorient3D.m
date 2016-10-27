@@ -25,9 +25,9 @@ function [angle1, angle2] = ...
     [fx,fy,fz] = gradient(f);          
     
     % Gradient of Gausian.
-    Gx = imfilter(im, fx);
-    Gy = imfilter(im, fy);
-    Gz = imfilter(im, fz);
+    Gx = imfilter(im, fx); fprintf('.')
+    Gy = imfilter(im, fy);fprintf('.')
+    Gz = imfilter(im, fz);fprintf('.')
 
     angle1 = getAngleField(Gz, Gy, blocksigma, orientsmoothsigma);
     angle2 = getAngleField(hypot(Gz,Gy), Gx, blocksigma, orientsmoothsigma);
@@ -48,9 +48,9 @@ function [orientim] = ...
     f = images.internal.createGaussianKernel([blocksigma blocksigma blocksigma], [sze sze sze]);
   
 
-    Gxx=imfilter(Gxx, f );
-    Gxy=2*imfilter(Gxy,f);
-    Gyy=imfilter(Gyy, f);   
+    Gxx=imfilter(Gxx, f );fprintf('.')
+    Gxy=2*imfilter(Gxy,f);fprintf('.')
+    Gyy=imfilter(Gyy, f); fprintf('.')  
     
     % Analytic solution of principal direction
     denom = sqrt(Gxy.^2 + (Gxx - Gyy).^2) + eps;
@@ -61,10 +61,11 @@ function [orientim] = ...
         sze = fix(6*orientsmoothsigma);   if ~mod(sze,2); sze = sze+1; end    
 
         f = images.internal.createGaussianKernel([orientsmoothsigma orientsmoothsigma orientsmoothsigma], [sze sze sze]);
-        cos2theta=imfilter(cos2theta, f);
-        sin2theta=imfilter(sin2theta, f);           
+        cos2theta=imfilter(cos2theta, f);fprintf('.')
+        sin2theta=imfilter(sin2theta, f);      fprintf('.')     
     end
    
     
-    orientim = pi/2 + atan2(sin2theta,cos2theta)/2;      
+    orientim = pi/2 + atan2(sin2theta,cos2theta)/2;    
+    fprintf('Orientation map calculation complete\n')
 
