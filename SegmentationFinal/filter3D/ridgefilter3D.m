@@ -74,11 +74,13 @@ end
 % Generate filters corresponding to these distinct frequencies and
 % orientations in 'angleInc' increments.
 
-[filter]=filtercreation(unfreq,kx,ky,kz,angleInc);
+
+[filter,sze]=filtercreation(unfreq,kx,ky,kz,angleInc);
 
 
 % Find indices of matrix points greater than maxsze from the image
 % boundary
+
 maxsze = sze(1);
  finalind = find(validr>maxsze & validr<rows-maxsze & ...
      validc>maxsze & validc<cols-maxsze & ...
@@ -112,7 +114,7 @@ for k = 1:length(finalind)
 end
 end
 
-function [filter]=filtercreation(unfreq,kx,ky,kz,angleInc)
+function [filter,sze]=filtercreation(unfreq,kx,ky,kz,angleInc)
 sze = zeros(length(unfreq),1);
 filter = cell(length(unfreq),length(unfreq),180/angleInc);
 for k = 1:length(unfreq)
