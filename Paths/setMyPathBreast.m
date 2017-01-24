@@ -15,7 +15,7 @@ function imageFolders = setMyPathBreast(testMode,dbname)
         % This path should point to the root folder of our DataBase: /research/ameyerbaese/DataBases/
         % But in your local machine. 
 
-        folderPath =  'PATH TO ROOT BREAST DATABASE' ;
+        folderPath =  '/research/ameyerbaese/DataBases/Breast/' ;
         %folderPath = '/media/BKNotToImportant/BigData_Images_and_Others/MedicalImaging/Breast/';% Olmo's Path
     end
 

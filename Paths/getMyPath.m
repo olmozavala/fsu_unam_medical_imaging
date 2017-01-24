@@ -10,9 +10,9 @@ function dbpath = getMyPath(testMode,dbname)
         % We can discuss what is the best way to organize the test folder
         folderPath = '/home/olmozavala/Dropbox/MedicalImaging_Group/Test_Data/Breast/';% Olmo's Path
     else
-        % This path should point to the root folder of our DataBase: /research/ameyerbaese/DataBases/
+        % This path should point to the root folder of our DataBase: 
         % But in your local machine. 
-        folderPath = '/media/USBSimpleDrive/BigData_Images_and_Others/MedicalImaging/Breast/';
+        folderPath = '/research/ameyerbaese/DataBases/';
     end
 
     dbpath = strcat(folderPath, dbname,'/');
