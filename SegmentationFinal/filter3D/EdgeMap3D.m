@@ -20,7 +20,7 @@ function [ EM ] = EdgeMap3D(im,mask)
     %show(reliability,6)
     
     % Determine ridge frequency values across the image 
-    [medfreq] = 0.16;
+    [medfreq] = 0.08;
     %show(freq,3) 
     
     % Actually I find the median frequency value used across the whole

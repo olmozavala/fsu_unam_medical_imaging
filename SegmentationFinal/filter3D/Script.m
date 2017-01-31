@@ -4,7 +4,7 @@ close all
 
 % Definitions (it assumes the function setMypath has been executed, and the
 % DCE-MRI database is in the path
-patientData = '0847664_p6_ok.mat';
+patientData = '0232016_p12_too_small_not_visible';
 load(patientData);
 
 % The DCE-MRI is orientated in a different way that the NME database, so a reorientation is needed first 
@@ -17,6 +17,5 @@ img = squeeze(stp_reduced(1,:,:,:));
 %Get a mask that discards the background
 [~, mask]=get_mask(stp_reduced,0.06);
 
-% Get the Edge Map and plot it
-[EM]=EdgeMap3D(img,~mask);
-bmp_stack(EM,10,2);
+%get the segmented breast from the chest mask
+[segmented_mask] = SegmentBreast3D( img,~mask);
