@@ -4,14 +4,14 @@ close all
 
 % Definitions (it assumes the function setMypath has been executed, and the
 % DCE-MRI database is in the path
-patientData = '0232016_p12_too_small_not_visible';
+patientData = '2004235_p9_ok.mat';
 load(patientData);
 
 % The DCE-MRI is orientated in a different way that the NME database, so a reorientation is needed first 
 stp=flipdim(permute(stack_all,[1 2 4 3]),4);
 
 %Get the first image of the pateient, and reduce the resolution by interpolation. (It is not necessary but it will be faster) 
-stp_reduced=reduce_interp(stp,4);%1.83);
+stp_reduced=reduce_interp(stp,3);
 img = squeeze(stp_reduced(1,:,:,:));
 
 %Get a mask that discards the background

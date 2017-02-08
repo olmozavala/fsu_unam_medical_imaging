@@ -6,8 +6,16 @@ k=0.5; % The value of k determines hoy many hills and valeys the filter is going
        % k=3/4 ---> Two hills one valley
        % k=1   ----> two hills two valleys
 
+
+
+width=round(size(imgData,1)/15);
+% Alternatively, ask for the tipical width (in pixels) of the wall to detect
+
+medfreq=1/width;
+
+       
 %Get the Edge map
-[ EM ] = EdgeMap3D(imgData,mask,k);
+[ EM ] = EdgeMap3D(imgData,mask,k,medfreq);
 
 % Erode it to separate the inner organs from the chest
 SE=strel('disk',1,0);
