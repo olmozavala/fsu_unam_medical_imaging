@@ -1,14 +1,20 @@
-function [filter,sze,reffilter]=filtercreation(unfreq,kx,ky,kz,angleInc)
+function [filter,sze,reffilter]=filtercreation(unfreq,kx,ky,kz)
+
+
+angleInc = 3;  % Fixed angle increment between filter orientations in
+% degrees. This should divide evenly into 180
+
+
 sze = zeros(length(unfreq),1);
-filter = cell(length(unfreq),length(unfreq),180/angleInc);
+filter = cell(180/angleInc,180/angleInc,length(unfreq));
 for k = 1:length(unfreq)
-    sigmax = 1/unfreq(k)*kx;
-    sigmay = 1/unfreq(k)*ky;
-    sigmaz = 1/unfreq(k)*kz;
+    sigmax = kx; %1/unfreq(k)*kx;
+    sigmay = ky; %1/unfreq(k)*ky;
+    sigmaz = kz;%1/unfreq(k)*kz;
     sze(k) = round(3*max(sigmax,max(sigmay,sigmaz)));
     [x,y,z] = meshgrid(-sze(k):sze(k));
     reffilter = exp(-(x.^2/sigmax^2 + y.^2/sigmay^2 +  z.^2/sigmaz^2)/2)...
-        .*cos(2*pi*unfreq(k)*x);
+        .*cos(2*pi*unfreq(k)*x/max(x(:)));
     
     % Generate rotated versions of the filter.  Note orientation
     % image provides orientation *along* the ridges, hence +90
