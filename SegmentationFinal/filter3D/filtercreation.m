@@ -1,10 +1,4 @@
-function [filter,sze,reffilter]=filtercreation(unfreq,kx,ky,kz)
-
-
-angleInc = 3;  % Fixed angle increment between filter orientations in
-% degrees. This should divide evenly into 180
-
-
+function [filter,sze,reffilter]=filtercreation(unfreq,kx,ky,kz,angleInc)
 sze = zeros(length(unfreq),1);
 filter = cell(180/angleInc,180/angleInc,length(unfreq));
 for k = 1:length(unfreq)

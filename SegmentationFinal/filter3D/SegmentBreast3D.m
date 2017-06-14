@@ -17,23 +17,12 @@ medfreq = 1.2;
 % % Alternatively, ask for the tipical width (in pixels) of the wall to detect
 
 
-% Create the filter
-[filter,sze]=filtercreation(medfreq,k,k,k);
-
 %Get the Edge map
-[ EM ] = EdgeMap3D(imgData,mask,filter,sze,medfreq);
 
-% Loop until the regions are separated
-difference=1;
-step=1;
-while abs(difference(step))>0.001
-step=step+1;
-[ EMb ] = EdgeMap3D(EM,mask,filter,sze,medfreq);
-difference(step)=sum(sum(sum(EMb>0-EM>0)))/sum(EMb(:))
-EM=EMb;
-end
-
-plot(difference)
+[ EM1 ] = EdgeMap3D(imgData,mask,k,medfreq);
+[ EM2 ] = EdgeMap3D(EM1,mask,k,medfreq);
+[ EM3 ] = EdgeMap3D(EM2,mask,k,medfreq);
+[ EM4 ] = EdgeMap3D(EM3,mask,k,medfreq);
 % Erode it to separate the inner organs from the chest
 % SE=strel('disk',1,0);
 % [propdiff,obsiz_list,EM_eroded]=erode_intwo(EM,SE);

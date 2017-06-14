@@ -39,13 +39,12 @@
 %
 % January 2005
 
-function newim = ridgefilter3D(im, orient1, orient2, filter,sze,freq)
+function newim = ridgefilter3D(im, orient1, orient2, freq, kx, ky,kz)
+
 
 
 angleInc = 3;  % Fixed angle increment between filter orientations in
 % degrees. This should divide evenly into 180
-
-
 
 im = double(im);
 [rows, cols, slcs] = size(im);
@@ -62,7 +61,7 @@ freq(ind) = round(freq(ind)*100)/100;
 
 % Generate an array of the distinct frequencies present in the array
 % freq
-unfreq = unique(freq(ind));fprintf('.')
+unfreq = unique(freq(ind));
 
 % Generate a table, given the frequency value multiplied by 100 to obtain
 % an integer index, returns the index within the unfreq array that it
@@ -76,7 +75,7 @@ end
 % orientations in 'angleInc' increments.
 
 
-%[filter,sze]=filtercreation(unfreq,kx,ky,kz,angleInc);
+[filter,sze]=filtercreation(unfreq,kx,ky,kz,angleInc);
 
 
 % Find indices of matrix points greater than maxsze from the image
@@ -85,7 +84,7 @@ end
 maxsze = sze(1);
  finalind = find(validr>maxsze & validr<rows-maxsze & ...
      validc>maxsze & validc<cols-maxsze & ...
-     valids>maxsze & valids<slcs-maxsze);fprintf('.')
+     valids>maxsze & valids<slcs-maxsze);
 %finalind = ind(;
 
 % Convert orientation matrix values from radians to an index value
@@ -98,7 +97,7 @@ i1 = find(orientindex1 > maxorientindex);
 orientindex1(i1) = orientindex1(i1)-maxorientindex;
 i2 = find(orientindex2 < 1);   orientindex2(i2) = orientindex1(i2)+maxorientindex;
 i2 = find(orientindex2 > maxorientindex);
-orientindex2(i2) = orientindex2(i2)-maxorientindex;fprintf('.')
+orientindex2(i2) = orientindex2(i2)-maxorientindex;
 
 % Finally do the filtering
 for k = 1:length(finalind)

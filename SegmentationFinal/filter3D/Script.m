@@ -15,7 +15,7 @@ stp_reduced=reduce_interp(stp,3);
 img = squeeze(stp_reduced(1,:,:,:));
 
 %Get a mask that discards the background
-[~, mask]=get_mask(stp_reduced);
+[~, mask]=get_mask(stp_reduced,0.06);
 
 %get the segmented breast from the chest mask
 [segmented_mask] = SegmentBreast3D( img,~mask);
@@ -28,4 +28,4 @@ end
 [~,max_i_val]=max(mean_val);
 im=zeros(size(segmented_mask));
 im(cc.PixelIdxList{max_i_val})=1;
-bmp_stack(im,6,2)
+bmp_stack(im+img/max(img(:)),6,2)

@@ -1,9 +1,11 @@
-function [ EM ] = EdgeMap3D(im,mask,filter,sze,medfreq)
+function [ EM ] = EdgeMap3D(im,mask,k,medfreq)
 
-    if nargin<5
+    if nargin<4
         medfreq=0.4; % Controls the size of the filter. Must be adjusted to the size of the wall you want to detect. A higher value of frequency may produce too many lines
+        if nargin<3
+            k=0.5;
+        end
     end
-    
     % Identify ridge-like regions and normalise image
     im = normalise(im,0,1);  % normalise to have zero mean, unit std dev
     
@@ -33,9 +35,9 @@ function [ EM ] = EdgeMap3D(im,mask,filter,sze,medfreq)
     freq = medfreq.*mask;
     
     % Now apply filters to enhance the ridge pattern
-    newim = ridgefilter3D(normim, orientim1,orientim2, filter,sze, freq);
+    newim = ridgefilter3D(normim, orientim1,orientim2, freq, k, k, k);
     %show(newim,4);
-    fprintf('Filtered!\n')
+    
     % Binarise, ridge/valley threshold is 0
     %EM = newim > 200;
     %show(EM,5);
