@@ -10,7 +10,7 @@ function [res]=eigenbreast(stack_all)
 
 %% SETTINGS
 % Manually fixed parameters
-endslice=40;    % 40 is a good value in DCE-MRI database
+
 minvalue=2;     % value of intensity. below this value, all intensities are saturated to this
 maxvalue= 100;  % Value of intensity. Above this value, all intensities are saturated to this (150 is good value in DCE-MRI database).
 gaussianS=7;
@@ -18,8 +18,7 @@ gaussianD=2;
 
 %% PREPROCESSING 
 % Torax segmentation
-[breastRoi]=torax_segmentation(stack_all);
-stack_allm=stack_all(:,:,breastRoi:end-endslice,:);
+[stack_allm]=torax_segmentation(stack_all);
  
 clear stack_all
 % Intensity normalization
@@ -63,10 +62,3 @@ res(3).pca=pca;
 
 end
 
-function [local]=torax_segmentation(stack_all)
-mimg=mean(stack_all);
-mimg=squeeze(mimg)/max(mimg(:));
-mimgsag=squeeze(mean(mimg(175:185,:,:)));
-a=sum(mimgsag,2);
-local=find(a>1,1,'last');
-end
