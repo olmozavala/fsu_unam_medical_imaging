@@ -39,12 +39,9 @@
 %
 % January 2005
 
-function newim = ridgefilter3D(im, orient1, orient2, freq, kx, ky,kz)
+function newim = ridgefilter3D(im, orient1, orient2, freq,filter,sze,angleInc)
 
 
-
-angleInc = 3;  % Fixed angle increment between filter orientations in
-% degrees. This should divide evenly into 180
 
 im = double(im);
 [rows, cols, slcs] = size(im);
@@ -71,21 +68,16 @@ for k = 1:length(unfreq)
     freqindex(round(unfreq(k)*100)) = k;
 end
 
-% Generate filters corresponding to these distinct frequencies and
-% orientations in 'angleInc' increments.
-
-
-[filter,sze]=filtercreation(unfreq,kx,ky,kz,angleInc);
 
 
 % Find indices of matrix points greater than maxsze from the image
 % boundary
 
-maxsze = sze(1);
- finalind = find(validr>maxsze & validr<rows-maxsze & ...
-     validc>maxsze & validc<cols-maxsze & ...
-     valids>maxsze & valids<slcs-maxsze);
-%finalind = ind(;
+% maxsze = sze(1);
+%  finalind = find(validr>maxsze & validr<rows-maxsze & ...
+%      validc>maxsze & validc<cols-maxsze & ...
+%      valids>maxsze & valids<slcs-maxsze);
+finalind = find(validr & validc & valids);
 
 % Convert orientation matrix values from radians to an index value
 % that corresponds to round(degrees/angleInc)
@@ -99,7 +91,13 @@ i2 = find(orientindex2 < 1);   orientindex2(i2) = orientindex1(i2)+maxorientinde
 i2 = find(orientindex2 > maxorientindex);
 orientindex2(i2) = orientindex2(i2)-maxorientindex;
 
+% Expand the image to filter the image boundary
+imn=zeros(size(im,1)+2*sze(1),size(im,2)+2*sze(1),size(im,3)+2*sze(1));
+imn(1+sze(1):size(im,1)+sze(1),1+sze(1):size(im,2)+sze(1),1+sze(1):size(im,3)+sze(1)) = im;
+
 % Finally do the filtering
+
+
 for k = 1:length(finalind)
     r = validr(finalind(k));
     c = validc(finalind(k));
@@ -110,7 +108,7 @@ for k = 1:length(finalind)
     filterindex = freqindex(round(freq(r,c,s)*100));
     
     t = sze(filterindex);
-    newim(r,c,s) = sum(sum(sum(im(r-t:r+t, c-t:c+t,s-t:s+t).*filter{orientindex1(r,c,s),orientindex2(r,c,s),filterindex})));
+    newim(r,c,s) = sum(sum(sum(imn(r:r+2*t, c:c+2*t,s:s+2*t).*filter{orientindex1(r,c,s),orientindex2(r,c,s)})));%,filterindex})));
 end
 end
 

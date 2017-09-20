@@ -1,7 +1,7 @@
-function [ EM ] = EdgeMap3D(im,mask,k,medfreq)
+function [ newim ] = EdgeMap3D(im,mask,k,medfreq,filter,angleInc)
 
     if nargin<4
-        medfreq=0.4; % Controls the size of the filter. Must be adjusted to the size of the wall you want to detect. A higher value of frequency may produce too many lines
+        medfreq=0.4; 
         if nargin<3
             k=0.5;
         end
@@ -14,8 +14,6 @@ function [ EM ] = EdgeMap3D(im,mask,k,medfreq)
     % standard deviation.
     im = im - mean(im(mask));
     normim = im/std(im(mask));    
-
-    %show(normim,1);
     
     % Determine ridge orientations
     gradientsigma=1; 
@@ -23,25 +21,13 @@ function [ EM ] = EdgeMap3D(im,mask,k,medfreq)
    
     [orientim1, orientim2] = ridgeorient3D(normim,gradientsigma, blocksigma, blocksigma);
     
-    fprintf('Orientation maps extracted!\n')
-    %orientim=repmat(pi/size(im,1):pi/size(im,1):pi,[size(im,2) 1])';
-    %plotridgeorient(orientim, 20, im, 2)
-    %show(reliability,6)
-    
+    fprintf('Orientation maps extracted!\n')    
 
-    
-    % Actually I find the median frequency value used across the whole
-    % fingerprint gives a more satisfactory result...
     freq = medfreq.*mask;
     
     % Now apply filters to enhance the ridge pattern
-    newim = ridgefilter3D(normim, orientim1,orientim2, freq, k, k, k);
-    %show(newim,4);
+    newim = ridgefilter3D(normim, orientim1,orientim2, freq,filter,k,angleInc);
     
-    % Binarise, ridge/valley threshold is 0
-    %EM = newim > 200;
-    %show(EM,5);
-    EM=newim;
 
 
 end
