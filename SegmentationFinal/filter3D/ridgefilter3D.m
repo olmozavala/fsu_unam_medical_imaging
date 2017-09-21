@@ -47,6 +47,7 @@ im = double(im);
 [rows, cols, slcs] = size(im);
 newim = zeros(rows,cols,slcs);
 
+freq=freq.*ones(size(im));
 % [validr,validc, valids] = find(freq);  % find where there is valid frequency data.
 % ind = sub2ind([rows,cols,slcs], validr, validc,valids);
 ind = find(freq(:));

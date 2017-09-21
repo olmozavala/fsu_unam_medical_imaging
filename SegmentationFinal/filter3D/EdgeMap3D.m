@@ -1,4 +1,4 @@
-function [ newim ] = EdgeMap3D(im,mask,k,medfreq,filter,angleInc)
+function [ newim ] = EdgeMap3D(im,k,medfreq,filter,angleInc)
 
     if nargin<4
         medfreq=0.4; 
@@ -7,13 +7,13 @@ function [ newim ] = EdgeMap3D(im,mask,k,medfreq,filter,angleInc)
         end
     end
     % Identify ridge-like regions and normalise image
-    im = normalise(im,0,1);  % normalise to have zero mean, unit std dev
+    normim = normalise(im,0,1);  % normalise to have zero mean, unit std dev
     
         
     % Renormalise image so that the *ridge regions* have zero mean, unit
     % standard deviation.
-    im = im - mean(im(mask));
-    normim = im/std(im(mask));    
+%     im = im - mean(im(:));
+%     normim = im/std(im(:));    
     
     % Determine ridge orientations
     gradientsigma=1; 
@@ -22,11 +22,9 @@ function [ newim ] = EdgeMap3D(im,mask,k,medfreq,filter,angleInc)
     [orientim1, orientim2] = ridgeorient3D(normim,gradientsigma, blocksigma, blocksigma);
     
     fprintf('Orientation maps extracted!\n')    
-
-    freq = medfreq.*mask;
     
     % Now apply filters to enhance the ridge pattern
-    newim = ridgefilter3D(normim, orientim1,orientim2, freq,filter,k,angleInc);
+    newim = ridgefilter3D(normim, orientim1,orientim2, medfreq,filter,k,angleInc);
     
 
 

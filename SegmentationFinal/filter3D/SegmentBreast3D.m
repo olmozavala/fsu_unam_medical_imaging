@@ -1,34 +1,34 @@
-function [segmented_mask] = SegmentBreast3D( imgData ,mask)
+function [segmented_mask] = SegmentBreast3D( imgData,k,medfreq,border,per_limit,dil_size,angleInc)
 
 
 %% Adjustable Parameters
 
 
-k = 10;% 7 ; % The value of k determines the size of the filter in voxels
-        % which will be [2k+1 2k+1 2k+1]
+% k           % The value of k determines the size of the filter in voxels
+              % which will be [2k+1 2k+1 2k+1]
 
      
-medfreq = 1.2;% 1.4;    
-%        % medfreq=1/2  ----> One hill
-%        % medfreq=1 ---> One hill one valley
-%        % medfreq=2 ---> Two hills one valley
-%        % medfreq=3   ----> two hills two valleys
-% % Alternatively, ask for the tipical width (in pixels) of the wall to detect% 
+% medfreq    
+%             % medfreq=1/2  ----> One hill
+%             % medfreq=1 ---> One hill one valley
+%             % medfreq=2 ---> Two hills one valley
+%             % medfreq=3   ----> two hills two valleys
+%             %  Alternatively, ask for the tipical width (in pixels) of the wall to detect% 
 
 
 
-border=3; % Select: 1 for segmenting following the valleys
-          %         3 for segmenting following the hills
+% border      % Select: 1 for segmenting following the valleys
+              %         3 for segmenting following the hills
 
 
-per_limit=0.2;  % Size of the lines to preserve in the Edge Map. Proportion (0 to 1). Lines that account a
-                % smaller value than per_limit are discarded
+% per_limit   % Size of the lines to preserve in the Edge Map. Proportion (0 to 1). Lines that account a
+              % smaller value than per_limit are discarded
                 
-dil_size=7;  % Size of the sphere used for dilation and erosion (5 for border=1, 7 for border=3 are good numbers)
+% dil_size    % Size of the sphere used for dilation and erosion (5 for border=1, 7 for border=3 are good numbers)
 
 
-angleInc=3; % Fixed angle increment between filter orientations in
-            % degrees. This should divide evenly into 180
+% angleInc    % Fixed angle increment between filter orientations in
+              % degrees. This should divide evenly into 180
 
 %%
 
@@ -40,12 +40,15 @@ filter = filtercreation(medfreq,k,angleInc);
 
 %Get the Edge map
 
-[ EM ] = EdgeMap3D(imgData,mask,k,medfreq,filter,angleInc);
+[ EM ] = EdgeMap3D(imgData,k,medfreq,filter,angleInc);
 
+%%
+% Repeat until no difference bigger than tolerance is obtained
+% 
  difference=1;
  while difference>0.01
      d=difference;
- [ EMb ] = EdgeMap3D(EM,mask,k,medfreq,filter,angleInc);
+ [ EMb ] = EdgeMap3D(EM,k,medfreq,filter,angleInc);
  difference=abs(sum(gt(EMb(:),0)-gt(EM(:),0))/sum(EMb(:)))
  if difference>d, break, end 
  EM=EMb;
@@ -56,12 +59,14 @@ filter = filtercreation(medfreq,k,angleInc);
 % Repeat with coarser values
 
 
-%k_factor = 1.4;       % Amplification factor for k
-%freq_factor = 0.86;   % Amplification factor for medfreq
-
-%[ EM_coarse_t ] = EdgeMap3D(EM,mask,round(k_factor*k),freq_factor*medfreq,filter,angleInc);
-
-%[ EM_coarse ] = EdgeMap3D(EM_coarse_t,mask,round(k_factor*k_factor*k),freq_factor*medfreq,filter,angleInc);
+% k_factor = 1.4;       % Amplification factor for k
+% freq_factor = 0.86;   % Amplification factor for medfreq
+% 
+% filter = filtercreation(freq_factor*medfreq,round(k_factor*k),angleInc);
+% [ EM_coarse_t ] = EdgeMap3D(EM,round(k_factor*k),freq_factor*medfreq,filter,angleInc);
+% 
+% filter = filtercreation(freq_factor*medfreq,round(k_factor*k_factor*k),angleInc);
+% [ EM_coarse ] = EdgeMap3D(EM_coarse_t,round(k_factor*k_factor*k),freq_factor*medfreq,filter,angleInc);
 
 %%
 
@@ -75,11 +80,18 @@ Quantized_EM = imfill(Quantized_EM);
 [chest_contour]=GetChestContour(imgData,7,5000);
 
 % Select the borders and discard small ones
-cc=bwconncomp(Quantized_EM==border);
+bw_image=(Quantized_EM==border);
+SE=strel('disk',1,0);
+bw_eroded=imerode(bw_image,SE);
+cc=bwconncomp(bw_eroded);
 for j=1:cc.NumObjects
     reg_size(j)=numel(cc.PixelIdxList{j}); 
 end
 list=find(gt(reg_size/sum(reg_size),per_limit));
+while or(isempty(list),lt(per_limit,0.01))
+    per_limit=per_limit/2;
+    list=find(gt(reg_size/sum(reg_size),per_limit));
+end
 im_border=zeros(size(Quantized_EM));
 for j=1:numel(list)
     im_border(cc.PixelIdxList{list(j)})=1; 
@@ -98,22 +110,6 @@ segmented_mask=imerode(im_border_filled,se1);
 %%%%%%%%%%%%%%%%%%%
 % OLD TRY (This never really worked)
 %%%%%%%%%%%%%%%%%%%
-
-
-
-% Iterate the process of extracting the edge map until there is no
-% improvement
-%
-% difference=1;
-% while difference>0.001
-%     d=difference;
-% [ EMb ] = EdgeMap3D(EM,mask,k,medfreq);
-% difference=abs(sum(gt(EMb(:),0)-gt(EM(:),0))/sum(EMb(:)))
-% if difference>d, return, end 
-% EM=EMb;
-% end
-%%%%%%%%%
-
 
 
 
